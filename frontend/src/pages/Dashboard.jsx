@@ -7,7 +7,7 @@ import toast from 'react-hot-toast';
 import CountryCodeSelector from '@components/CountryCodeSelector';
 
 export default function Dashboard() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { user, updateUser } = useAuth();
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -92,7 +92,7 @@ export default function Dashboard() {
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString('pt-BR', {
+    return date.toLocaleDateString(i18n.language === 'pt' ? 'pt-BR' : i18n.language === 'en' ? 'en-US' : i18n.language === 'fr' ? 'fr-FR' : 'es-ES', {
       weekday: 'long',
       day: '2-digit',
       month: 'long',
