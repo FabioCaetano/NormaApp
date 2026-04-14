@@ -1,0 +1,7 @@
+{
+  "ignore": [
+    "whatsapp-auth",
+    "node_modules",
+    "*.test.js"
+  ]
+}

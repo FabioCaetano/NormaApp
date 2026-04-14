@@ -1,0 +1,96 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                 String             @id @default(cuid())
+  name               String
+  email              String             @unique
+  phone              String
+  password           String
+  role               String             @default("CLIENT") // ADMIN ou CLIENT
+  planId             String?
+  plan               Plan?              @relation(fields: [planId], references: [id])
+  bookings           Booking[]
+  lastBookingDate    DateTime?          // Último agendamento realizado
+  lastReminderSent   DateTime?          // Último lembrete enviado
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+
+  @@map("users")
+}
+
+model Plan {
+  id          String   @id @default(cuid())
+  name        String
+  description String
+  price       Float
+  sessions    Int      @default(1) // Sessões por mês
+  isActive    Boolean  @default(true)
+  users       User[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("plans")
+}
+
+model Booking {
+  id          String   @id @default(cuid())
+  userId      String?
+  user        User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  clientName  String?  // Para cliente avulso
+  clientEmail String?  // Para cliente avulso
+  clientPhone String?  // Para cliente avulso
+  date        DateTime // Data do agendamento
+  time        String   // Horário (HH:mm)
+  service     String   // Tipo de serviço
+  status      String   @default("SCHEDULED") // SCHEDULED, COMPLETED, CANCELLED
+  isWalkIn    Boolean  @default(false) // Cliente avulso
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("bookings")
+}
+
+model BlockedSchedule {
+  id        String   @id @default(cuid())
+  date      DateTime // Data bloqueada
+  time      String   // Horário bloqueado (HH:mm)
+  reason    String?  // Motivo do bloqueio
+  createdAt DateTime @default(now())
+
+  @@map("blocked_schedules")
+}
+
+model ScheduleConfig {
+  id              String   @id @default(cuid())
+  dayOfWeek       Int      // 0=Domingo, 1=Segunda, ..., 6=Sábado
+  isOpen          Boolean  @default(true) // Se o dia está aberto
+  startTime       String   @default("09:00") // Horário de abertura
+  endTime         String   @default("19:00") // Horário de fechamento
+  slotDuration    Int      @default(30) // Duração de cada slot em minutos
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([dayOfWeek])
+  @@map("schedule_configs")
+}
+
+model Lead {
+  id        String   @id @default(cuid())
+  name      String
+  email     String?
+  phone     String
+  source    String   @default("WEBSITE") // Origem do lead
+  createdAt DateTime @default(now())
+
+  @@map("leads")
+}
